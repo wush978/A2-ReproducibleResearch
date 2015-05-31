@@ -825,11 +825,6 @@ inputPanel(checkboxGroupInput(inputId = 'show_vars', label =' Columns in diamond
 - `ui.R` 需要有 `dataTableOutput` 將Table HTML語法抓出
 
 ```r
-dataTableOutput(`mytable`)
-output$mytable <- renderDataTable({...})
-```
-<div class="code_block">  
-```{r eval=FALSE}
 #### ui.R ####################################
 library(shiny);library(ggplot2)
 shinyUI(fluidPage(
@@ -851,7 +846,7 @@ shinyUI(fluidPage(
 - `server.R` 需要有`renderDataTable` 將Table語法回傳
 - 資料採用`ggplot2`中`diamonds`作為範例
 
-```{r, eval=FALSE}
+```r
 #### server.R ###############################
 library(shiny);library(ggplot2)  
 shinyServer(function(input, output) {
@@ -861,7 +856,28 @@ shinyServer(function(input, output) {
   })#renderDataTable
 })#function,shinyServer
 ```
-</div>
+
+## 結果
+
+```{r, echo = FALSE}
+library(shiny);library(ggplot2)
+fluidPage(
+  titlePanel("Examples of DataTables"),
+  sidebarLayout(
+    sidebarPanel(
+      checkboxGroupInput(inputId = 'demo_show_vars', 'Columns in diamonds to show:',
+                           names(diamonds), selected = names(diamonds))
+    ),
+    mainPanel(
+      dataTableOutput('mytable')
+    )#mainPanel
+  )#sidebarLayout
+)#fluidPage,shinyUI
+
+output$mytable <- renderDataTable({
+  diamonds[, input$demo_show_vars, drop = FALSE]
+})#renderDataTable
+```
 
 ## 小挑戰 8 -- dataTable
 
@@ -937,7 +953,7 @@ shinyApp(
       filter(diamonds,cut == input$cut)
     })
     output$plot1 <- renderPlot({
-      diamond.p <- ggplot(data = selectedData(), aes(x = reorder(clarity, -price), y = price, colour = clarity, fill = clarity)) 
+      diamond.p <- ggplot(data = selectedData(), aes(x = clarity, y = price, colour = clarity, fill = clarity)) 
       diamond.p + geom_bar(stat="identity") + coord_flip()
     })
   },
@@ -945,44 +961,49 @@ shinyApp(
 )
 ```
 
+## UI -- `selectInput`
+
+```{r, echo = TRUE}
+selectInput(inputId='cut', label='cut', levels(diamonds$cut))
+```
+
 ## 繪製圖形 -- barplot
 
-- `reorder(factor_a,vector_b,FUN=mean)`: 不同淨度與其他組合價格排序不同
-- `stat=identity`: 針對y個別值直接累計
-
-<div class="code_block">  
 ```{r barplot_code, warning=FALSE,eval=FALSE}
 library(ggplot2);library(dplyr)
-d.p <- ggplot(data = filter(diamonds,cut == "Good"), 
-              aes(x = reorder(clarity, -price), y = price, colour = clarity, fill = clarity)) 
+data <- filter(diamonds,cut == input$cut)
+d.p <- ggplot(data = data, 
+              aes(x = clarity, y = price, colour = clarity, fill = clarity)) 
 d.p + geom_bar(stat="identity") + coord_flip()
 ```
 
-```{r barplot_result, warning=FALSE,echo=FALSE}
-library(ggplot2);library(dplyr)
-d.p <- ggplot(data = filter(diamonds,cut == "Good"), 
-              aes(x = reorder(clarity, -price), y = price, colour = clarity, fill = clarity)) 
-d.p + geom_bar(stat="identity") + coord_flip()
+## `reactive`
+
+```r
+selectedData <- reactive({
+  filter(diamonds,cut == input$cut)
+})
 ```
 
-</div>
+## 結果
 
-## `server.R` 互動元件
+```r
+selectedData <- reactive({
+  filter(diamonds,cut == input$cut)
+})
+output$plot1 <- renderPlot({
+  diamond.p <- ggplot(data = selectedData(), aes(x = clarity, y = price, colour = clarity, fill = clarity)) 
+  diamond.p + geom_bar(stat="identity") + coord_flip()
+})
+```
+
+## `ui.R` vs `server.R`
 
 ui.R            | server.R
 ------------------|-----------------------------------------------
 plotOutput      | renderPlot
 tableOutput     | renderTable
 dataTableOutput | renderDataTable
-
-<div class="code_block"> 
-
-```{r}
-library(dplyr);library(ggplot2)
-inputPanel(selectInput(inputId='cut', label='cut', levels(diamonds$cut)))
-renderTable(head(filter(diamonds,cut == "Good")))
-```
-</div>
 
 ## 小挑戰 9 -- barplot
 
@@ -1000,7 +1021,7 @@ shinyApp(
   server = function(input, output){
     output$plot1 <- renderPlot({
       bike.p <- ggplot(data = filter(ubike, sarea == input$District), 
-                       aes(x = reorder(sna, -avg.bemp), y = avg.bemp, colour = sna, fill = sna))
+                       aes(x = sna, y = avg.bemp, colour = sna, fill = sna))
       bike.p + geom_bar(stat="identity") + coord_flip()
     })
   },
