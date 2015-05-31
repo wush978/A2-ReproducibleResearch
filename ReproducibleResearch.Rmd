@@ -6,12 +6,12 @@ output:
   ioslides_presentation:
     css: css/dsp.css
     widescreen: yes
-#subtitle: shiny
-#runtime: shiny
+subtitle: shiny
+runtime: shiny
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(comment="", message=FALSE, warning=FALSE, eval = FALSE) #mark subtitle,runtime and add eval=FALSE
+knitr::opts_chunk$set(comment="", message=FALSE, warning=FALSE, eval=(Sys.getenv("SHINY") == "true")) #mark subtitle,runtime and add eval=FALSE
 library(knitr)
 library(shiny)
 library(rmarkdown)
@@ -50,7 +50,7 @@ if (!file.exists("data/ubikeweather_utf8.rda")) {
 
 # 傢俬準備好
 
-<img src="img/dsp-page.png" style="display:none"/>
+<img src="img/dsp-page-cht.png" style="display:none"/>
 <img src="img/dsp-front-cover.png" style="display:none"/>
 
 ## 環境安裝 {.flexbox .vcenter}
@@ -62,7 +62,7 @@ install.packages(c("dplyr","ggplot2","shiny","devtools", "rmarkdown"))
 devtools::install_github('rstudio/shinyapps')
 ```
 
-- 開啟線上投影片<http://hack.dsp.im/A2-ReproducibleResearch/ReproducibleResearch.html#4>
+- 開啟線上投影片<http://wush978.github.io/ReproducibleResearch>
 
 # 如何輸出R 的統計分析結果
 
@@ -189,18 +189,8 @@ rmarkdown允許我們直接將R 的輸出嵌入到報告之中：
 
 ## 做中學 - 行內的輸出 {.flexbox .vcenter}
 
-- 在文件的最後，加上: `cars總共有\`r nrow(cars)\`列`
+- 在文件的最後，加上: ![](img/inline-r-chunk.png)
 - 編譯文件，觀察輸出結果
-
-## 總結 {.flexbox .vcenter}
-
-- 建立Rmd 文件並編譯
-- 輸出R Console 的結果
-- 輸出圖片
-- 使用Chunk Option
-    - 選擇是否顯示R 的程式碼
-    - 選擇輸出R Console結果的方式
-- 透過Chunk Option和knitr::kable來輸出表格
 
 # shiny shiny little star
 
@@ -453,7 +443,7 @@ titlePanel(title = "Test Title 1")
 titlePanel(title = "Test Title 2")
 ```
 
-## Hello Shiny的`ui.R`中shiny UI物件的功能與常用參數
+## Hello Shiny的`ui.R`中shiny UI物件的功能與參數
 
 - `titlePanel` 產生標題
     - `title`：頁面的標題
@@ -830,11 +820,9 @@ inputPanel(checkboxGroupInput(inputId = 'show_vars', label =' Columns in diamond
 ```
 </div>
 
-## dataTable code
+## dataTable code - ui.R
 
 - `ui.R` 需要有 `dataTableOutput` 將Table HTML語法抓出
-- `server.R` 需要有`renderDataTable` 將Table語法回傳
-- 資料採用`ggplot2`中`diamonds`作為範例
 
 ```r
 dataTableOutput(`mytable`)
@@ -856,6 +844,14 @@ shinyUI(fluidPage(
     )#mainPanel
   )#sidebarLayout
 ))#fluidPage,shinyUI
+```
+
+## dataTable code -- server.R
+
+- `server.R` 需要有`renderDataTable` 將Table語法回傳
+- 資料採用`ggplot2`中`diamonds`作為範例
+
+```{r, eval=FALSE}
 #### server.R ###############################
 library(shiny);library(ggplot2)  
 shinyServer(function(input, output) {
@@ -1251,60 +1247,27 @@ shinyServer(function(input, output) {
 ```
 </div>
 
+# 總結
 
-# 期末成發
+## rmarkdown 總結 {.flexbox .vcenter}
 
-## [shinyapps(v0.3.64)](https://www.shinyapps.io/)
+- 建立Rmd 文件並編譯
+- 輸出R Console 的結果
+- 輸出圖片
+- 使用Chunk Option
+    - 選擇是否顯示R 的程式碼
+    - 選擇輸出R Console結果的方式
+- 透過Chunk Option和knitr::kable來輸出表格
 
-- [Getting started with shinyapps.io](http://shiny.rstudio.com/articles/shinyapps.html)
-- Platform as a service for hosting shiny web apps
-    1. Windows users: Rtools  
-    2. Mac users: XCode Command Line Tools  
-    3. Linux users: GCC  
-- The latest version of the [shinyapps](https://github.com/rstudio/shinyapps) R package
-- Application
-    - Application loggint: `shinyapps::showLogs()`
-    - Configuring applications: `shinyapps::configureApp(APPNAME,size="small")`
-    - Application authentication(目前只有付費才有此功能)
-    - Terminate an app: `terminateApp("<your app's name>")`
+## Shiny 總結 {.flexbox .vcenter}
 
-## deploy shinyapps
+- 了解Shiny 的運作原理
+- 建立Shiny app
+- 適當的配置`ui.R`和`server.R`來製作Shiny apps
+    - 表格：dataTable
+    - 圖形：plot
+- *bonus* 知道如何對Shiny app做除錯
 
-1. Login with Google or Github
-2. get token: `setAccountInto(name,token,secret)`
-3. `deployApp(appDir="appdir_name", appName = "Name_at_shinyapps")`
+## F&Q
 
-## 小挑戰11 -- 將最後的app放到shinyapps
-
-Windows 需要較多更動，Mac與Linux只要資料位置正確即可直接deploy  
-
-1. 檔案放致在apps下面，與`ui.R`、`server.R`同目錄下   
-2. 將`load("ubikeweather_big5.rda")` 改成`load("ubikeweather_utf8.rda")`   
-3. download [global.R](https://raw.githubusercontent.com/dspim/A2-ReproducibleResearch/master/apps/navbarPage/global.R) for 編碼支援  
-4. 程式內部除了註解不能放有中文字內容   
-5. 此部分所需時間較久，需要上傳資料與檔案，上課操作時網路流量要注意   
-
-# Appendiex
-
-## Layout
-
-通常指網頁版面，頁面的形式，佈局
-
-- Sidebar Layouts(Simple default layout)
-- Grid Layouts  
-    - Custom application layouts: fluid & fixed
-    - `fluidPage(fluidRow(column()))`
-        - a flexibly sub-dividable 12-column grid for layout
-- Segmenting Layouts
-    - `navbarPage(tabPanel(), navbarMenu())`
-    - `tabsetPanel(tabPanel()), navlistPanel(tabPanel())`
-- Responsive Layout
-    - automatically adapt its layout for viewing on different sized devices
-
-## Layout
-
-<img src="img/Fluid.png" style='max-width: 100%;max-height:90%'>
-<img src="img/Responsive-Layout.png" style='max-width: 140%;max-height:60%'>
-[Responsive Layout](http://goo.gl/x7fh2U)
-
-
+## 謝謝

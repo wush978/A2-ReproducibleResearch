@@ -948,12 +948,10 @@ shinyServer(function(input, output) {
 inputPanel(checkboxGroupInput(inputId = &#39;show_vars&#39;, label =&#39; Columns in diamonds to show:&#39;,
                               choices = names(diamonds), selected = names(diamonds)))</pre></div>
 
-</article></slide><slide class=''><hgroup><h2>dataTable code</h2></hgroup><article  id="datatable-code">
+</article></slide><slide class=''><hgroup><h2>dataTable code - ui.R</h2></hgroup><article  id="datatable-code---ui.r">
 
 <ul>
 <li><code>ui.R</code> 需要有 <code>dataTableOutput</code> 將Table HTML語法抓出</li>
-<li><code>server.R</code> 需要有<code>renderDataTable</code> 將Table語法回傳</li>
-<li>資料採用<code>ggplot2</code>中<code>diamonds</code>作為範例</li>
 </ul>
 
 <pre class = 'prettyprint lang-r'>dataTableOutput(`mytable`)
@@ -973,8 +971,16 @@ shinyUI(fluidPage(
       dataTableOutput(&#39;mytable&#39;)
     )#mainPanel
   )#sidebarLayout
-))#fluidPage,shinyUI
-#### server.R ###############################
+))#fluidPage,shinyUI</pre>
+
+</article></slide><slide class=''><hgroup><h2>dataTable code &#8211; server.R</h2></hgroup><article  id="datatable-code----server.r">
+
+<ul>
+<li><code>server.R</code> 需要有<code>renderDataTable</code> 將Table語法回傳</li>
+<li>資料採用<code>ggplot2</code>中<code>diamonds</code>作為範例</li>
+</ul>
+
+<pre class = 'prettyprint lang-r'>#### server.R ###############################
 library(shiny);library(ggplot2)  
 shinyServer(function(input, output) {
   # a large table, reative to input$show_vars
